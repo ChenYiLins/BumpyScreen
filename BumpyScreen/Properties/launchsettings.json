@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "BumpyScreen (Unpackaged)": {
+        "commandName": "Project"
+      },
+      "BumpyScreen (Package)": {
+        "commandName": "MsixPackage"
+      }
+    }
+}

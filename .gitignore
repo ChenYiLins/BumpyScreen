@@ -1,0 +1,6 @@
+.vsconfig
+.vs/
+BumpyScreen.Core/bin/
+BumpyScreen.Core/obj/
+BumpyScreen/bin/
+BumpyScreen/obj/
