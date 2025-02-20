@@ -14,12 +14,5 @@ public sealed partial class TrayIconPage : Page
     {
         ViewModel = App.GetService<TrayIconViewModel>();
         InitializeComponent();
-
-        Loaded += TrayIconPage_Loaded;
-    }
-
-    private void TrayIconPage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
-    {
-        ContextFlyout.ShowAt(this);
     }
 }

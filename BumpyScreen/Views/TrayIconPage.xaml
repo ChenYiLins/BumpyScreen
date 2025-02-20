@@ -7,7 +7,7 @@
     mc:Ignorable="d">
 
     <Page.ContextFlyout>
-        <MenuFlyout>
+        <MenuFlyout ShouldConstrainToRootBounds="False">
             <ToggleMenuFlyoutItem x:Name="StartWithWindowsToggleMenuFlyoutItem" x:Uid="ToggleMenuFlyoutItem_StartWithWindows">
                 <MenuFlyoutItem.Icon>
                     <FontIcon Glyph="&#xE7F7;" />

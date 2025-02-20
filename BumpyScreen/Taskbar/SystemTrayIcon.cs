@@ -1,24 +1,32 @@
 ﻿using System.Drawing;
 using System.Runtime.InteropServices;
+using BumpyScreen.Views;
+using Microsoft.UI;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Hosting;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
+using WinRT;
 
 namespace BumpyScreen.Taskbar;
 
-public class SystemTrayIcon : IDisposable
+// The code about this part, I try to creat TrayIcon just like the Files(https://github.com/files-community/Files)
+// And I found the way to display a modern Flyout from WinUI3, this way is come from MicaForEveryone(https://github.com/MicaForEveryone/MicaForEveryone)
+// Although the ideas of the two are the same, but I found some bugs such as the mouse is always in a "busy" state after click the TrayIcon, maybe the message was not processed normally
+public partial class SystemTrayIcon : IDisposable
 {
     // Constants
-    public static TrayFlyoutContextMenu trayIconContextMenu;
-
-    private const uint WM_FILES_UNIQUE_MESSAGE = 2048u;
-    private const uint WM_FILES_CONTEXTMENU_DOCSLINK = 1u;
-    private const uint WM_FILES_CONTEXTMENU_RESTART = 2u;
-    private const uint WM_FILES_CONTEXTMENU_QUIT = 3u;
+    private const uint WM_UNIQUE_MESSAGE = 2048u;
+    private const uint WM_CONTEXTMENU_DOCSLINK = 1u;
+    private const uint WM_CONTEXTMENU_RESTART = 2u;
+    private const uint WM_CONTEXTMENU_QUIT = 3u;
 
     // Fields
-    private static readonly string PathApp = AppDomain.CurrentDomain.BaseDirectory;
+    private static readonly string _pathApp = AppDomain.CurrentDomain.BaseDirectory;
+
+    private DesktopWindowXamlSource? _source;
 
     private static readonly Guid _trayIconGuid = new("CDD3158B-5EED-45C7-A8E4-848F5D12B0F2");
 
@@ -95,7 +103,7 @@ public class SystemTrayIcon : IDisposable
 
     public SystemTrayIcon()
     {
-        _Icon = new System.Drawing.Icon(PathApp + @"Assets\WindowIcon.ico");
+        _Icon = new System.Drawing.Icon(_pathApp + @"Assets\WindowIcon.ico");
         _Tooltip = "BumpyScreen";
         _taskbarRestartMessageId = PInvoke.RegisterWindowMessage("TaskbarCreated");
 
@@ -131,7 +139,7 @@ public class SystemTrayIcon : IDisposable
 
             lpData.cbSize = (uint)Marshal.SizeOf(typeof(NOTIFYICONDATAW));
             lpData.hWnd = _IconWindow.WindowHandle;
-            lpData.uCallbackMessage = WM_FILES_UNIQUE_MESSAGE;
+            lpData.uCallbackMessage = WM_UNIQUE_MESSAGE;
             lpData.hIcon = (Icon != null) ? new HICON(Icon.Handle) : default;
             lpData.guidItem = Id;
             lpData.uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP | NOTIFY_ICON_DATA_FLAGS.NIF_GUID | NOTIFY_ICON_DATA_FLAGS.NIF_SHOWTIP;
@@ -184,15 +192,18 @@ public class SystemTrayIcon : IDisposable
     {
         switch (uMsg)
         {
-            case WM_FILES_UNIQUE_MESSAGE:
+            case WM_UNIQUE_MESSAGE:
                 {
                     if ((uint)(lParam.Value & 0xFFFF) == PInvoke.WM_LBUTTONUP | (uint)(lParam.Value & 0xFFFF) == PInvoke.WM_RBUTTONUP)
                     {
+                        PInvoke.SetForegroundWindow(hWnd);
+
                         Point mousePos;
                         PInvoke.GetCursorPos(out mousePos);
-                        trayIconContextMenu = new TrayFlyoutContextMenu();
-                        trayIconContextMenu.ContextMenuWindow.Activate();
-                        trayIconContextMenu.ContextMenuWindow.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(mousePos.X + 15 , mousePos.Y - 15, 0, 0));
+                        var scaleFactor = PInvoke.GetDpiForWindow(hWnd) / 96f;
+
+                        var page = (TrayIconPage)(_source!.Content);
+                        page.ContextFlyout.As<MenuFlyout>().ShowAt(page, new Windows.Foundation.Point((mousePos.X) / scaleFactor, (mousePos.Y) / scaleFactor));
                     }
 
                     break;
@@ -200,6 +211,19 @@ public class SystemTrayIcon : IDisposable
             case PInvoke.WM_DESTROY:
                 {
                     DeleteNotifyIcon();
+
+                    break;
+                }
+            case WM_CONTEXTMENU_DOCSLINK:
+                {
+                    // Bind Xaml to Win32 Windows
+                    _source = new();
+                    var thing = Win32Interop.GetWindowIdFromWindow(hWnd);
+                    _source.Initialize(thing);
+                    _source.Content = new TrayIconPage();
+                    // Indicates that the XAML content will automatically adjust as the parent window is resized, at the same time display Xaml
+                    _source.SiteBridge.ResizePolicy = Microsoft.UI.Content.ContentSizePolicy.ResizeContentToParentWindow;
+                    _source.SiteBridge.Show();
 
                     break;
                 }

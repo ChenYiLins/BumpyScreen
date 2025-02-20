@@ -39,18 +39,22 @@ public class SystemTrayIconWindow : IDisposable
         }
 
         _windowHandle = PInvoke.CreateWindowEx(
-            WINDOW_EX_STYLE.WS_EX_LEFT,
+            WINDOW_EX_STYLE.WS_EX_NOACTIVATE | WINDOW_EX_STYLE.WS_EX_TOPMOST | WINDOW_EX_STYLE.WS_EX_TOOLWINDOW,
             text,
             string.Empty,
-            WINDOW_STYLE.WS_OVERLAPPED,
+            WINDOW_STYLE.WS_POPUPWINDOW,
             0,
             0,
-            1,
-            1,
+            0,
+            0,
             default,
             null,
             null,
             null);
+
+        var rgn = PInvoke.CreateRectRgn(0, 0, 0, 0);
+        PInvoke.SetWindowRgn(_windowHandle, rgn, false);
+        PInvoke.ShowWindow(_windowHandle,SHOW_WINDOW_CMD.SW_SHOW);
 
         if (_windowHandle == default) throw new Win32Exception("ERR: Message window handle was not a valid pointer.");
     }
