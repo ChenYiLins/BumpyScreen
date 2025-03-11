@@ -8,3 +8,8 @@ CreateRectRgn
 SetWindowRgn
 
 WM_*
+
+ChangeDisplaySettingsEx
+EnumDisplayDevices
+EnumDisplaySettingsW
+ENUM_CURRENT_SETTINGS
