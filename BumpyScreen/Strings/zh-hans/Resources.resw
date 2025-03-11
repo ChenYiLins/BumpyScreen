@@ -65,24 +65,24 @@
 		<value>BumpyScreen</value>
   	</data>
   <data name="StartWithWindows" xml:space="preserve">
-    <value>Start with Windows</value>
+    <value>开机启动</value>
   </data>
   <data name="About" xml:space="preserve">
-    <value>About</value>
+    <value>关于</value>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Quit</value>
+    <value>退出</value>
   </data>
   <data name="Horizontal" xml:space="preserve">
-    <value>Horizontal</value>
+    <value>横向</value>
   </data>
   <data name="RetroflexHorizontal" xml:space="preserve">
-    <value>Horizontal (Flip)</value>
+    <value>横向(翻转)</value>
   </data>
   <data name="Vertical" xml:space="preserve">
-    <value>Vertical</value>
+    <value>纵向</value>
   </data>
   <data name="RetroflexVertical" xml:space="preserve">
-    <value>Verttcal (Flip)</value>
+    <value>纵向(翻转)</value>
   </data>
 </root>
