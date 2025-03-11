@@ -10,7 +10,7 @@ using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
 using WinRT;
 
-namespace BumpyScreen.Taskbar;
+namespace BumpyScreen.Utils.Taskbar;
 
 // The code about this part, I try to creat TrayIcon just like the Files(https://github.com/files-community/Files)
 // And I found the way to display a modern Flyout from WinUI3, this way is come from MicaForEveryone(https://github.com/MicaForEveryone/MicaForEveryone)
@@ -19,11 +19,10 @@ public partial class SystemTrayIcon : IDisposable
 {
     // Constants
     private const uint WM_UNIQUE_MESSAGE = 2048u;
-    private const uint WM_CONTEXTMENU_DOCSLINK = 1u;
-    private const uint WM_CONTEXTMENU_RESTART = 2u;
-    private const uint WM_CONTEXTMENU_QUIT = 3u;
 
     // Fields
+    private readonly Microsoft.UI.Dispatching.DispatcherQueue _dispatcherQueue;
+
     private static readonly string _pathApp = AppDomain.CurrentDomain.BaseDirectory;
 
     private DesktopWindowXamlSource? _source;
@@ -110,6 +109,8 @@ public partial class SystemTrayIcon : IDisposable
         Id = _trayIconGuid;
         _IconWindow = new SystemTrayIconWindow(this);
 
+        _dispatcherQueue = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
         CreateOrModifyNotifyIcon();
     }
 
@@ -194,16 +195,18 @@ public partial class SystemTrayIcon : IDisposable
         {
             case WM_UNIQUE_MESSAGE:
                 {
-                    if ((uint)(lParam.Value & 0xFFFF) == PInvoke.WM_LBUTTONUP | (uint)(lParam.Value & 0xFFFF) == PInvoke.WM_RBUTTONUP)
+                    if ((uint)(lParam.Value & 0xFFFF) == PInvoke.WM_RBUTTONUP)
                     {
-                        PInvoke.SetForegroundWindow(hWnd);
+                        _dispatcherQueue.TryEnqueue(() =>
+                        {
+                            PInvoke.SetForegroundWindow(hWnd);
+                            Point mousePos;
+                            PInvoke.GetCursorPos(out mousePos);
+                            var scaleFactor = PInvoke.GetDpiForWindow(hWnd) / 96f;
 
-                        Point mousePos;
-                        PInvoke.GetCursorPos(out mousePos);
-                        var scaleFactor = PInvoke.GetDpiForWindow(hWnd) / 96f;
-
-                        var page = (TrayIconPage)(_source!.Content);
-                        page.ContextFlyout.As<MenuFlyout>().ShowAt(page, new Windows.Foundation.Point((mousePos.X) / scaleFactor, (mousePos.Y) / scaleFactor));
+                            var page = (TrayIconPage)(_source!.Content);
+                            page.ContextFlyout.As<MenuFlyout>().ShowAt(page, new Windows.Foundation.Point((mousePos.X + 10) / scaleFactor, (mousePos.Y - 10) / scaleFactor));
+                        });
                     }
 
                     break;
@@ -214,13 +217,14 @@ public partial class SystemTrayIcon : IDisposable
 
                     break;
                 }
-            case WM_CONTEXTMENU_DOCSLINK:
+            case PInvoke.WM_CREATE:
                 {
                     // Bind Xaml to Win32 Windows
                     _source = new();
                     var thing = Win32Interop.GetWindowIdFromWindow(hWnd);
                     _source.Initialize(thing);
                     _source.Content = new TrayIconPage();
+
                     // Indicates that the XAML content will automatically adjust as the parent window is resized, at the same time display Xaml
                     _source.SiteBridge.ResizePolicy = Microsoft.UI.Content.ContentSizePolicy.ResizeContentToParentWindow;
                     _source.SiteBridge.Show();

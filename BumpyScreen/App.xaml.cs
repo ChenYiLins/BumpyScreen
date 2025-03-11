@@ -2,9 +2,8 @@
 using BumpyScreen.Contracts.Services;
 using BumpyScreen.Core.Contracts.Services;
 using BumpyScreen.Core.Services;
-using BumpyScreen.Helpers;
 using BumpyScreen.Services;
-using BumpyScreen.Taskbar;
+using BumpyScreen.Utils.Taskbar;
 using BumpyScreen.ViewModels;
 using BumpyScreen.Views;
 
@@ -42,7 +41,10 @@ public partial class App : Application
 
     public static SystemTrayIcon SystemTrayIcon { get; } = new();
 
-    public static UIElement? AppTitlebar { get; set; }
+    public static UIElement? AppTitlebar
+    {
+        get; set;
+    }
 
     public App()
     {
@@ -75,6 +77,8 @@ public partial class App : Application
             // Configuration
         }).
         Build();
+
+        //Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-us";
 
         UnhandledException += App_UnhandledException;
     }

@@ -4,7 +4,7 @@ using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.WindowsAndMessaging;
 
-namespace BumpyScreen.Taskbar;
+namespace BumpyScreen.Utils.Taskbar;
 
 public class SystemTrayIconWindow : IDisposable
 {
@@ -54,7 +54,7 @@ public class SystemTrayIconWindow : IDisposable
 
         var rgn = PInvoke.CreateRectRgn(0, 0, 0, 0);
         PInvoke.SetWindowRgn(_windowHandle, rgn, false);
-        PInvoke.ShowWindow(_windowHandle,SHOW_WINDOW_CMD.SW_SHOW);
+        PInvoke.ShowWindow(_windowHandle, SHOW_WINDOW_CMD.SW_SHOW);
 
         if (_windowHandle == default) throw new Win32Exception("ERR: Message window handle was not a valid pointer.");
     }
