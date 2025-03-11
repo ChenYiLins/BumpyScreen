@@ -4,3 +4,4 @@ BumpyScreen.Core/bin/
 BumpyScreen.Core/obj/
 BumpyScreen/bin/
 BumpyScreen/obj/
+*.user

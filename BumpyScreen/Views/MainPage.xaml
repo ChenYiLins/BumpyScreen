@@ -6,8 +6,5 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Background="{ThemeResource SolidBackgroundFillColorBaseBrush}"
     mc:Ignorable="d">
-    <Grid x:Name="ContentArea">
-
-        
-    </Grid>
+    <Grid x:Name="ContentArea" />
 </Page>
